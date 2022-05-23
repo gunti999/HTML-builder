@@ -46,27 +46,19 @@ function htmlBundler() {
         content += chunk.toString();
         let find = chunk.toString().match(regExp);
         find.forEach(el => {
-            fs.readdir(`${__dirname}/components`, (err, files) => {  
-                files.forEach(file => {
-                    let arr = file.split('.');
-                    let name = el.slice(2, -2);
-                    if (arr[0] === name) {
-                        const read = fs.createReadStream(`${__dirname}/components/${file}`);
-                        read.on('data', (html) => {
-                            content = content.replace(el, html.toString()); 
-                            fs.writeFile(`${projectDist}/index.html`, content, (err) => {})
-                        })
-                    }
-                })
+            let name = el.slice(2, -2);
+            const read = fs.createReadStream(`${__dirname}/components/${name}.html`);
+            read.on('data', (html) => {
+                content = content.replace(el, html.toString());
+                fs.writeFile(`${projectDist}/index.html`, content, (err) => {})
             })
         })
     })
 }
 
-fs.rm(projectDist, { recursive: true, force: true }, (err) => {
-    fs.mkdir(projectDist, { recursive: true }, (err) => {
+
+    fs.mkdir(projectDist, (err) => {
+        htmlBundler();
         folderCopy('assets');
         cssBundler('styles');
-        htmlBundler();
     })
-})
